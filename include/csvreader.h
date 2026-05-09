@@ -1,0 +1,20 @@
+#ifndef CSVREADER_H
+#define CSVREADER_H
+#include "csvtable.h"
+
+#define SEPARATOR ','
+
+
+int load_csv_file(const char *filepath, Table *out_table);
+int print_csv_table(Table *t);
+
+typedef enum {
+    STPARS_START = 0,
+    STPARS_NOQUOTE,
+    STPARS_QUOTE,
+    STPARS_SECQUOTE,
+    STPARS_END,
+    STPARS_ERROR = -1,
+}StateParsing;
+
+#endif
