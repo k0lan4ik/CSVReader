@@ -15,6 +15,7 @@ typedef enum {
     STPARS_QUOTE,
     STPARS_SECQUOTE,
     STPARS_END,
+    STPARS_RET,
     STPARS_ERROR = -1,
 }StateParsing;
 

@@ -23,7 +23,7 @@ int evaluate_cell(Table* t, int r, int c, int *value) {
     cell->state = CELL_CALCULATING;
 
     int arg1_len = 0, arg2_len = 0;
-    char op, *arg1_s, *arg2_s, *exp = cell->raw;
+    char op = '\0', *arg1_s, *arg2_s, *exp = cell->raw;
     StateMath state = STMATH_START;
     for (int index = 0; exp[index]; index++)
     {  
@@ -35,12 +35,13 @@ int evaluate_cell(Table* t, int r, int c, int *value) {
             else {state = STMATH_ARG1; arg1_s = &exp[index + 1];}
             break;
         case STMATH_ARG1:
-            if(last == '+' || last == '-' || last == '*' || last == '/') {state = STMATH_OP; op = last;}
+            if((arg1_len > 0 && (last == '+' || last == '-')) || (last == '*' || last == '/')) {state = STMATH_OP; op = last;}
             else arg1_len++; 
             break;
         case STMATH_OP:
-            if(last == '+' || last == '-' || last == '*' || last == '/') state = STMATH_ERROR;
-            else {state = STMATH_ARG2; arg2_s = &exp[index]; arg2_len++;}
+            state = STMATH_ARG2; 
+            arg2_s = &exp[index]; 
+            arg2_len++;
             break;
         case STMATH_ARG2:
             if(last == '+' || last == '-' || last == '*' || last == '/') {state = STMATH_ERROR;}
@@ -50,19 +51,19 @@ int evaluate_cell(Table* t, int r, int c, int *value) {
         break;
         }
     }
-    if(state == STMATH_ERROR){
-       if(!check_number(&cell->value,cell->raw,strlen(cell->raw))){
-               cell->state = CELL_ERROR; 
-               return -2; 
+    if(state != STMATH_ARG2 && state != STMATH_ARG1){
+        if(!check_number(&cell->value,cell->raw,strlen(cell->raw))){
+               
+                cell->state = CELL_ERROR; 
+                return -2; 
             }
             *value = cell->value;
             cell->state = CELL_DONE; 
             return 0; 
     }
 
-    int arg1 = 0, arg2 = 0;
-    if(!check_number(&arg1, arg1_s, arg1_len))
-    {
+    int arg1 = 0, arg2 = 0; 
+    if(!check_number(&arg1, arg1_s, arg1_len)) {
         int row, col;
         if(!table_get_by_value(t, arg1_s, arg1_len, &row, &col)){
            cell->state = CELL_ERROR; 
@@ -74,8 +75,8 @@ int evaluate_cell(Table* t, int r, int c, int *value) {
         else if(err == -2) {cell->state = CELL_ERROR; return -2;}
         
     }
-    if(!check_number(&arg2, arg2_s, arg2_len))
-    {
+    if(op != 0 && !check_number(&arg2, arg2_s, arg2_len)) {
+       
         int row, col;
         if(!table_get_by_value(t, arg2_s, arg2_len, &row, &col)){
            cell->state = CELL_ERROR; 
@@ -104,6 +105,9 @@ int evaluate_cell(Table* t, int r, int c, int *value) {
             return -3;
         }
         cell->value = arg1 / arg2;
+        break;
+    case '\0':
+        cell->value = arg1;
         break;
     }
 
