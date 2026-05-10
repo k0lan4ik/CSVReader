@@ -10,7 +10,7 @@ BIN_DIR = $(BUILD_DIR)/bin
 SRC_FILES = $(wildcard src/*.c)
 TEST_FILES = $(wildcard tests/*.c)
 
-MODULES = $(wildcard src/*.c) #$(filter-out src/main.c, $(SRC_FILES))
+MODULES = $(filter-out src/main.c, $(SRC_FILES))
 
 MODULE_OBJS = $(patsubst src/%.c, $(OBJ_DIR)/%.o, $(MODULES))
 MAIN_OBJ = $(OBJ_DIR)/main.o

@@ -23,5 +23,9 @@ int main(int argc, char *argv[]) {
         printf("Error: Uncorrect file format.\n");
         return 1;
     }
+       
+    print_csv_table(&table);
+
+    table_free(&table);
     return 0;
 }

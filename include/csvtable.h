@@ -5,7 +5,8 @@ typedef enum {
     CELL_RAW = 0,
     CELL_CALCULATING,
     CELL_DONE,
-    CELL_ERROR
+    CELL_ERROR,
+    CELL_DIV0
 } CellState;
 
 typedef struct {
@@ -23,7 +24,7 @@ typedef struct {
 
 
 Cell *table_get_cell(Table *t, int r, int c);
-Cell *table_get_by_value(Table *t, char *val, int len);
+int table_get_by_value(Table *t, char *val, int len, int *r, int *c);
 void table_free(Table *t);
 
 #endif
