@@ -20,6 +20,7 @@ void create_test_file(const char* filename, const char* content) {
     }
 }
 
+
 //Тест1: базоваяарифметика
 void test_basic_math() {
     const char* filename = "test_math.csv";
@@ -196,7 +197,7 @@ void test_file_not_found() {
 }
 
 int main() {
-    printf("Running Math & CSV Tests\n");
+    printf("\nRunning Math & CSV Tests\n");
     RUN_TEST(test_basic_math);
     RUN_TEST(test_circular_dependency);
     RUN_TEST(test_division_by_zero);
