@@ -114,9 +114,10 @@ int load_csv_file(const char *filepath, Table *out_table) {
 
     char *buffer = malloc(file_size + 1);
     if (buffer) {
-            fread(buffer, 1, file_size, f);
+        fread(buffer, 1, file_size, f);
     }
-    while(file_size > 1 && (buffer[file_size - 1] == '\n' || buffer[file_size - 1] == '\r')) file_size--;
+    while(file_size > 1 && (buffer[file_size - 1] == '\n' || buffer[file_size - 1] == '\r')) 
+        file_size--;
     buffer[file_size] = '\0';
     fclose(f);
 
@@ -127,16 +128,16 @@ int load_csv_file(const char *filepath, Table *out_table) {
     while (index < file_size) {
         long len = len_cell(&buffer[index]);
         if(len == -1){
-                table_free(out_table);
-                return -2;
+            table_free(out_table);
+            return -2;
         }
         
         index += len;
         if(rows == 1 && buffer[index - 1] == SEPARATOR) {
-                cols++;
+            cols++;
         }
         else if(buffer[index - 1] == '\n') {
-                rows++;
+            rows++;
         }
     }
 
@@ -148,85 +149,65 @@ int load_csv_file(const char *filepath, Table *out_table) {
     rows = 0, cols = 0;
     char skip = 0;
     while (rows < out_table->rows && index < file_size) {
-            long len;
-            char last = unquote_cell(&buffer[index], &len);
+        long len;
+        char last = unquote_cell(&buffer[index], &len);
+        
+        if(last == -1) {
+            table_free(out_table);
+            return -2;
+        }
+        
+        if(!skip) {
+            if(cols < out_table->cols)
+                out_table->cells[rows * out_table->cols + cols].raw = &buffer[index];
+            else
+                skip = 1;
             
-            if(last == -1) {
-                table_free(out_table);
-                return -2;
-            }
-            
-            if(!skip) {
-                if(cols < out_table->cols)
-                    out_table->cells[rows * out_table->cols + cols].raw = &buffer[index];
-                else
-                    skip = 1;
-                
-                cols++;
-            }
-            if(last == '\n' || last == '\r') {
-                skip = 0;
-                cols = 0;
-                rows++;
-            }
-
-            index += len;
+            cols++;
+        }
+        if(last == '\n' || last == '\r') {
+            skip = 0;
+            cols = 0;
+            rows++;
+        }
+        index += len;
     }
 
     return 0;
 }
 
-void print_csv_table(Table *table){
-    for(int i = 0; i < table->rows; i++) {
-        for(int j = 0; j < table->cols - 1; j++){
-            if(table->cells[i * table->cols + j].raw != NULL) {
-                if(table->cells[i * table->cols + j].raw[0] == '=') {
-                    int value;
-                    int err = evaluate_cell(table, i, j, &value);
-                    if(err == -1) {
-                        printf("#CYCL!,"); 
-                    }
-                    else if(err == -2) {
-                        printf("%s,",table->cells[i * table->cols + j].raw);
-                    }
-                    else if(err == -3) {
-                        printf("#DIV/0!,"); 
-                    }
-                    else {
-                        printf("%d,",value);
-                    }
-                }
-                else {
-                    printf("%s,",table->cells[i * table->cols + j].raw);
-                }
+void print_sell(Table *table, int r, int c) {
+    Cell cell = table->cells[r * table->cols + c];
+    if(cell.raw != NULL) {
+        if(cell.raw[0] == '=') {
+            int value;
+            int err = evaluate_cell(table, r, c, &value);
+            if(err == -1) {
+                printf("#CYCL!"); 
+            }
+            else if(err == -2) {
+                printf("%s",cell.raw);
+            }
+            else if(err == -3) {
+                printf("#DIV/0!"); 
             }
             else {
-                printf(",");
-            }
-        }
-        if(table->cells[i * table->cols + table->cols - 1].raw != NULL) {
-            if(table->cells[i * table->cols + table->cols - 1].raw[0] == '=') {
-                int value;
-                int err = evaluate_cell(table, i, table->cols - 1, &value);
-                if(err == -1) {
-                    printf("#CYCL!\n"); 
-                }
-                else if(err == -2) {
-                    printf("%s\n",table->cells[i * table->cols + table->cols - 1].raw);
-                }
-                else if(err == -3) {
-                printf("#DIV/0!\n"); 
-                }
-                else {
-                    printf("%d\n",value);
-                }
-            }
-            else {
-                printf("%s\n",table->cells[i * table->cols + table->cols - 1].raw);
+                printf("%d",value);
             }
         }
         else {
-            printf("\n");
+            printf("%s",cell.raw);
         }
+    }
+}
+
+void print_csv_table(Table *table){
+    for(int i = 0; i < table->rows; i++) {
+        for(int j = 0; j < table->cols - 1; j++){
+            print_sell(table, i, j);
+            printf(",");
+        }
+        print_sell(table, i, table->cols - 1);
+        printf("\n");
     }
 }

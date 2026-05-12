@@ -54,12 +54,12 @@ int evaluate_cell(Table* t, int r, int c, int *value) {
     if(state != STMATH_ARG2 && state != STMATH_ARG1){
         if(!check_number(&cell->value,cell->raw,strlen(cell->raw))){
                
-                cell->state = CELL_ERROR; 
-                return -2; 
-            }
-            *value = cell->value;
-            cell->state = CELL_DONE; 
-            return 0; 
+            cell->state = CELL_ERROR; 
+            return -2; 
+        }
+        *value = cell->value;
+        cell->state = CELL_DONE; 
+        return 0; 
     }
 
     int arg1 = 0, arg2 = 0; 
